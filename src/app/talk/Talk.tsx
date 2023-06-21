@@ -131,10 +131,10 @@ export default function Talk() {
           />
         </div>
         <div>
-          <Label htmlFor="systemA" value="systemA" />
+          <Label htmlFor="systemA" value="system of AI_1" />
           <Textarea
             id="systemA"
-            placeholder="Please write system of A description here"
+            placeholder="Please write system of AI_1 description here"
             required
             rows={4}
             onInput={(e) => {
@@ -153,10 +153,10 @@ export default function Talk() {
           />
         </div>
         <div>
-          <Label htmlFor="systemB" value="systemB" />
+          <Label htmlFor="systemB" value="system of AI_2" />
           <Textarea
             id="systemB"
-            placeholder="Please write system of B description here"
+            placeholder="Please write system of AI_2 description here"
             required
             rows={4}
             onInput={(e) => {
@@ -175,10 +175,10 @@ export default function Talk() {
           />
         </div>
         <div>
-          <Label htmlFor="firstContent" value="First message" />
+          <Label htmlFor="firstContent" value="First message of AI_1" />
           <Textarea
             id="firstContent"
-            placeholder="Please write first message of A"
+            placeholder="Please write first message of AI_1"
             required
             rows={4}
             onInput={(e) => {
