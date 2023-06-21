@@ -5,7 +5,7 @@ import { ChatCompletionAProvider } from "../context/ChatCompletionAContext";
 import { TalkProvider } from "../context/TalkContext";
 import Talk from "./Talk";
 
-export default function () {
+export default function TalkPage() {
   return (
     <AppProvider>
       <TalkProvider>

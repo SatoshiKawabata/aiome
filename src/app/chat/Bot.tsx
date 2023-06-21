@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Label, TextInput, Textarea } from "flowbite-react";
+import { Button, Label, Textarea } from "flowbite-react";
 import {
   ChatCompletionRequestMessage,
   ChatCompletionRequestMessageRoleEnum,
@@ -13,6 +13,7 @@ import {
 import { ConversationChain } from "langchain/chains";
 import { BufferWindowMemory } from "langchain/memory";
 import { ChatOpenAI } from "langchain/chat_models/openai";
+import { getItem, setItem } from "@/util/LocalStorageUtil";
 
 interface P {
   apiKey: string;
@@ -23,7 +24,7 @@ interface P {
 export function Bot({ apiKey, name }: P) {
   const [chain, setChain] = useState<ConversationChain | null>(null);
   const [systemMessage, setSystemMessage] = useState(
-    localStorage.getItem("systemMessage") || ""
+    getItem("systemMessage") || ""
   );
   const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -98,7 +99,7 @@ export function Bot({ apiKey, name }: P) {
             onInput={(e) => {
               const value = (e.target as HTMLInputElement).value;
               setSystemMessage(value);
-              localStorage.setItem(`system-of-${name}`, value);
+              setItem(`system-of-${name}`, value);
             }}
             value={systemMessage}
           />

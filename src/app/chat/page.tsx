@@ -2,9 +2,10 @@
 import { Label, TextInput } from "flowbite-react";
 import { useState } from "react";
 import { Bot } from "./Bot";
+import { setItem } from "@/util/LocalStorageUtil";
 
 export default function Chat() {
-  const [apiKey, setApiKey] = useState(localStorage.getItem("apiKey") || "");
+  const [apiKey, setApiKey] = useState("");
   return (
     <main className="p-8">
       <div>
@@ -17,7 +18,7 @@ export default function Chat() {
           onInput={(e) => {
             const value = (e.target as HTMLInputElement).value;
             setApiKey(value);
-            localStorage.setItem("apiKey", value);
+            setItem("apiKey", value);
           }}
           value={apiKey}
         />

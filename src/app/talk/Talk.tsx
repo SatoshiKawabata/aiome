@@ -21,7 +21,7 @@ import { Button, Label, TextInput, Textarea } from "flowbite-react";
 import { ChatCompletionRequestMessageRoleEnum } from "openai";
 import { getItem, setItem } from "@/util/LocalStorageUtil";
 
-export default function () {
+export default function Talk() {
   const appDispatcher = useAppDispatchContext();
   const appState = useAppStateContext();
   const aState = useChatCompletionAStateContext();
@@ -194,9 +194,9 @@ export default function () {
         </div>
       </form>
       <ul>
-        {talkState.messages.map((message) => {
+        {talkState.messages.map((message, index) => {
           return (
-            <li>
+            <li key={index}>
               {message.userName}: 「{message.content}」
             </li>
           );
