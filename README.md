@@ -1,6 +1,4 @@
-This is a talk AI art project.
-
-https://aiome-satoshikawabata1.vercel.app/talk
+This is a talk AI art project. [Demo page is here.](https://aiome-satoshikawabata1.vercel.app/talk)
 
 ## Getting Started
 
