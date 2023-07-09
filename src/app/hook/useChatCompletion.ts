@@ -1,4 +1,9 @@
-import { Configuration, CreateChatCompletionRequest, OpenAIApi } from "openai";
+import {
+  ChatCompletionRequestMessageRoleEnum,
+  Configuration,
+  CreateChatCompletionRequest,
+  OpenAIApi,
+} from "openai";
 import {
   useChatCompletionBDispatchContext,
   useChatCompletionBStateContext,
@@ -8,7 +13,7 @@ import {
   useChatCompletionAStateContext,
 } from "../context/ChatCompletionAContext";
 import { useAppStateContext } from "../context/AppContext";
-import { TalkDispatch, TalkMessage } from "../state/TalkState";
+import { TalkDispatch, TalkMessage, TalkState } from "../state/TalkState";
 import {
   ChatCompletionDispatch,
   ChatCompletionState,
@@ -30,11 +35,25 @@ export function useChatCompletion() {
   const talkState = useTalkStateContext();
 
   function postChatA(talkMessage: TalkMessage) {
-    return postChat(talkDispatcher, aDispatcher, aState, apiKey, talkMessage);
+    return postChat(
+      talkDispatcher,
+      aDispatcher,
+      aState,
+      apiKey,
+      talkMessage,
+      talkState
+    );
   }
 
   function postChatB(talkMessage: TalkMessage) {
-    return postChat(talkDispatcher, bDispatcher, bState, apiKey, talkMessage);
+    return postChat(
+      talkDispatcher,
+      bDispatcher,
+      bState,
+      apiKey,
+      talkMessage,
+      talkState
+    );
   }
 
   useEffect(() => {
@@ -75,11 +94,22 @@ async function postChat(
   chatDispatcher: ChatCompletionDispatch,
   state: ChatCompletionState,
   apiKey: string,
-  talkMessage: TalkMessage
+  talkMessage: TalkMessage,
+  talkState: TalkState
 ): Promise<void> {
+  const summarizedMessage = await summarizeTalks(
+    state,
+    [...talkState.messages, talkMessage],
+    apiKey
+  );
+  const newTalkMessage: TalkMessage = {
+    ...talkMessage,
+    content: summarizedMessage,
+  };
+
   chatDispatcher.dispatch({
     type: "add-talk-message",
-    payload: talkMessage,
+    payload: newTalkMessage,
   });
 
   try {
@@ -96,8 +126,10 @@ async function postChat(
       logit_bias: state.logit_bias,
       user: state.user,
       messages: [
-        ...state.messages,
-        convertTalkMessageToHumanChatMessage(talkMessage),
+        ...state.messages.filter(
+          (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
+        ),
+        convertTalkMessageToHumanChatMessage(newTalkMessage),
       ],
     });
 
@@ -114,6 +146,51 @@ async function postChat(
       type: "add-ai-chat-message",
       payload: replyMessage,
     });
+  } catch (e) {
+    throw e;
+  }
+}
+
+const MAX_TEXT_COUNT_TO_SUMMARIZE = 500;
+
+async function summarizeTalks(
+  state: ChatCompletionState,
+  messages: TalkMessage[],
+  apiKey: string
+): Promise<string> {
+  const selfId = state.userId;
+  const joinedMessage = messages
+    .filter((msg) => msg.userId !== selfId)
+    .map((msg) => msg.content).join(`
+`);
+
+  if (joinedMessage.length <= MAX_TEXT_COUNT_TO_SUMMARIZE) {
+    return joinedMessage;
+  }
+
+  try {
+    const content = await createChatCompletion(apiKey, {
+      model: state.model,
+      temperature: state.temperature,
+      top_p: state.top_p,
+      n: state.n,
+      stream: state.stream,
+      stop: state.stop,
+      max_tokens: state.max_tokens,
+      presence_penalty: state.presence_penalty,
+      frequency_penalty: state.frequency_penalty,
+      logit_bias: state.logit_bias,
+      user: state.user,
+      messages: [
+        {
+          role: ChatCompletionRequestMessageRoleEnum.User,
+          content: `次の文章を${MAX_TEXT_COUNT_TO_SUMMARIZE}文字以内で要約してください。:
+    
+${joinedMessage}`,
+        },
+      ],
+    });
+    return content;
   } catch (e) {
     throw e;
   }
