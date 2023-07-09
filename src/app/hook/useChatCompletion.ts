@@ -8,8 +8,12 @@ import {
   useChatCompletionAStateContext,
 } from "../context/ChatCompletionAContext";
 import { useAppStateContext } from "../context/AppContext";
-import { TalkMessage } from "../state/TalkState";
-import { convertTalkMessageToHumanChatMessage } from "../state/ChatCompletionState";
+import { TalkDispatch, TalkMessage } from "../state/TalkState";
+import {
+  ChatCompletionDispatch,
+  ChatCompletionState,
+  convertTalkMessageToHumanChatMessage,
+} from "../state/ChatCompletionState";
 import {
   useTalkDispatchContext,
   useTalkStateContext,
@@ -25,89 +29,12 @@ export function useChatCompletion() {
   const talkDispatcher = useTalkDispatchContext();
   const talkState = useTalkStateContext();
 
-  async function postChatA(talkMessage: TalkMessage) {
-    aDispatcher.dispatch({
-      type: "add-talk-message",
-      payload: talkMessage,
-    });
-
-    try {
-      const content = await createChatCompletion(apiKey, {
-        model: aState.model,
-        temperature: aState.temperature,
-        top_p: aState.top_p,
-        n: aState.n,
-        stream: aState.stream,
-        stop: aState.stop,
-        max_tokens: aState.max_tokens,
-        presence_penalty: aState.presence_penalty,
-        frequency_penalty: aState.frequency_penalty,
-        logit_bias: aState.logit_bias,
-        user: aState.user,
-        messages: [
-          ...aState.messages,
-          convertTalkMessageToHumanChatMessage(talkMessage),
-        ],
-      });
-
-      aDispatcher.dispatch({
-        type: "add-ai-chat-message",
-        payload: content,
-      });
-      const replyMessage: TalkMessage = {
-        userId: aState.userId,
-        userName: aState.userName,
-        content,
-      };
-      talkDispatcher.dispatch({
-        type: "add-ai-chat-message",
-        payload: replyMessage,
-      });
-    } catch (e) {
-      throw e;
-    }
+  function postChatA(talkMessage: TalkMessage) {
+    return postChat(talkDispatcher, aDispatcher, aState, apiKey, talkMessage);
   }
 
-  async function postChatB(talkMessage: TalkMessage) {
-    bDispatcher.dispatch({
-      type: "add-talk-message",
-      payload: talkMessage,
-    });
-
-    try {
-      const content = await createChatCompletion(apiKey, {
-        model: bState.model,
-        temperature: bState.temperature,
-        top_p: bState.top_p,
-        n: bState.n,
-        stream: bState.stream,
-        stop: bState.stop,
-        max_tokens: bState.max_tokens,
-        presence_penalty: bState.presence_penalty,
-        frequency_penalty: bState.frequency_penalty,
-        logit_bias: bState.logit_bias,
-        user: bState.user,
-        messages: [
-          ...bState.messages,
-          convertTalkMessageToHumanChatMessage(talkMessage),
-        ],
-      });
-
-      bDispatcher.dispatch({
-        type: "add-ai-chat-message",
-        payload: content,
-      });
-      talkDispatcher.dispatch({
-        type: "add-ai-chat-message",
-        payload: {
-          userId: bState.userId,
-          userName: bState.userName,
-          content,
-        },
-      });
-    } catch (e) {
-      throw e;
-    }
+  function postChatB(talkMessage: TalkMessage) {
+    return postChat(talkDispatcher, bDispatcher, bState, apiKey, talkMessage);
   }
 
   useEffect(() => {
@@ -142,3 +69,52 @@ const createChatCompletion = async (
   }
   throw new Error("No message content");
 };
+
+async function postChat(
+  talkDispatcher: TalkDispatch,
+  chatDispatcher: ChatCompletionDispatch,
+  state: ChatCompletionState,
+  apiKey: string,
+  talkMessage: TalkMessage
+): Promise<void> {
+  chatDispatcher.dispatch({
+    type: "add-talk-message",
+    payload: talkMessage,
+  });
+
+  try {
+    const content = await createChatCompletion(apiKey, {
+      model: state.model,
+      temperature: state.temperature,
+      top_p: state.top_p,
+      n: state.n,
+      stream: state.stream,
+      stop: state.stop,
+      max_tokens: state.max_tokens,
+      presence_penalty: state.presence_penalty,
+      frequency_penalty: state.frequency_penalty,
+      logit_bias: state.logit_bias,
+      user: state.user,
+      messages: [
+        ...state.messages,
+        convertTalkMessageToHumanChatMessage(talkMessage),
+      ],
+    });
+
+    chatDispatcher.dispatch({
+      type: "add-ai-chat-message",
+      payload: content,
+    });
+    const replyMessage: TalkMessage = {
+      userId: state.userId,
+      userName: state.userName,
+      content,
+    };
+    talkDispatcher.dispatch({
+      type: "add-ai-chat-message",
+      payload: replyMessage,
+    });
+  } catch (e) {
+    throw e;
+  }
+}
