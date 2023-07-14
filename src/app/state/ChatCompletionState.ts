@@ -91,7 +91,7 @@ export const convertTalkMessageToHumanChatMessage = (
     content: `
 ${talkMessage.userName}さんが
 「${talkMessage.content}」と言っています。
-それに対する反論を鉤括弧付きで書いてください。
+それに対する反論を書いてください。
 その際に以下のルールを守ってください。
 - 160文字程度で書いてください。
 - 相手の意見に理解を示さないでください。
@@ -101,6 +101,9 @@ ${talkMessage.userName}さんが
 - 口語口調で書いてください。
 - 相手の論理の虚を突いてください。
 - 相手の揚げ足を取ってください。
+- 以下のテンプレートに従ってください。
+テンプレート:
+「{自分の反論}」
     `,
     name: talkMessage.userName,
   };
