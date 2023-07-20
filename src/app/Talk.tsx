@@ -1,22 +1,21 @@
-"use client";
 import { useEffect, useState } from "react";
 import {
   useAppDispatchContext,
   useAppStateContext,
-} from "../context/AppContext";
+} from "./context/AppContext";
 import {
   useChatCompletionBDispatchContext,
   useChatCompletionBStateContext,
-} from "../context/ChatCompletionBContext";
+} from "./context/ChatCompletionBContext";
 import {
   useChatCompletionADispatchContext,
   useChatCompletionAStateContext,
-} from "../context/ChatCompletionAContext";
+} from "./context/ChatCompletionAContext";
 import {
   useTalkDispatchContext,
   useTalkStateContext,
-} from "../context/TalkContext";
-import { useChatCompletion } from "../hook/useChatCompletion";
+} from "./context/TalkContext";
+import { useChatCompletion } from "./hook/useChatCompletion";
 import { Button, Label, TextInput, Textarea } from "flowbite-react";
 import { ChatCompletionRequestMessageRoleEnum } from "openai";
 import { getItem, setItem } from "@/util/LocalStorageUtil";
