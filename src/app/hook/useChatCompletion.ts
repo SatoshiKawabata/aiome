@@ -34,6 +34,11 @@ export function useChatCompletion() {
   const talkDispatcher = useTalkDispatchContext();
   const talkState = useTalkStateContext();
 
+  /**
+   * Aが発言する
+   * @param talkMessage
+   * @returns
+   */
   function postChatA(talkMessage: TalkMessage) {
     return postChat(
       talkDispatcher,
@@ -45,6 +50,11 @@ export function useChatCompletion() {
     );
   }
 
+  /**
+   * Bが発言する
+   * @param talkMessage
+   * @returns
+   */
   function postChatB(talkMessage: TalkMessage) {
     return postChat(
       talkDispatcher,
@@ -62,6 +72,7 @@ export function useChatCompletion() {
       return;
     }
     if (latestMessage.userId === aState.userId) {
+      // 最後の発言がAの場合はBが発言する
       postChatB(latestMessage);
     } else {
       postChatA(latestMessage);
@@ -97,11 +108,13 @@ async function postChat(
   talkMessage: TalkMessage,
   talkState: TalkState
 ): Promise<void> {
+  // 要約する
   const summarizedMessage = await summarizeTalks(
     state,
-    [...talkState.messages, talkMessage],
+    [...talkState.messages],
     apiKey
   );
+  console.log("summarizedMessage", summarizedMessage);
   const newTalkMessage: TalkMessage = {
     ...talkMessage,
     content: summarizedMessage,
@@ -126,9 +139,11 @@ async function postChat(
       logit_bias: state.logit_bias,
       user: state.user,
       messages: [
+        // Systemの設定
         ...state.messages.filter(
           (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
         ),
+        // 相手の発言を要約したもの
         convertTalkMessageToHumanChatMessage(newTalkMessage),
       ],
     });
@@ -153,12 +168,20 @@ async function postChat(
 
 const MAX_TEXT_COUNT_TO_SUMMARIZE = 500;
 
+/**
+ * 発言を要約する
+ * @param state
+ * @param messages
+ * @param apiKey
+ * @returns
+ */
 async function summarizeTalks(
   state: ChatCompletionState,
   messages: TalkMessage[],
   apiKey: string
 ): Promise<string> {
   const selfId = state.userId;
+  // 相手の発言のみを抽出する
   const joinedMessage = messages
     .filter((msg) => msg.userId !== selfId)
     .map((msg) => msg.content).join(`
