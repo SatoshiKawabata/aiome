@@ -24,6 +24,10 @@ import {
   useTalkStateContext,
 } from "../context/TalkContext";
 import { useEffect } from "react";
+/**
+ * 連続でリミットまで会話させられるようにする
+ *
+ */
 
 export function useChatCompletion() {
   const { apiKey } = useAppStateContext();
@@ -68,9 +72,19 @@ export function useChatCompletion() {
 
   useEffect(() => {
     const latestMessage = talkState.messages[talkState.messages.length - 1];
-    if (!latestMessage || talkState.messages.length >= talkState.talkLimit) {
+    // 会話を継続するかどうかの判定
+    if (
+      !latestMessage ||
+      talkState.messages.length - talkState.currentTalkStartCount >=
+        talkState.talkLimit
+    ) {
+      // 会話を終了する
+      talkDispatcher.dispatch({
+        type: "finish-ai-talking",
+      });
       return;
     }
+    // 会話を継続する
     if (latestMessage.userId === aState.userId) {
       // 最後の発言がAの場合はBが発言する
       postChatB(latestMessage);
@@ -79,9 +93,24 @@ export function useChatCompletion() {
     }
   }, [talkState.messages.length]);
 
+  function continueAITalk() {
+    // 会話を再開する
+    talkDispatcher.dispatch({
+      type: "restart-ai-talking",
+    });
+    const latestMessage = talkState.messages[talkState.messages.length - 1];
+    if (latestMessage.userId === aState.userId) {
+      // 最後の発言がAの場合はBが発言する
+      postChatB(latestMessage);
+    } else {
+      postChatA(latestMessage);
+    }
+  }
+
   return {
     postChatA,
     postChatB,
+    continueAITalk,
   };
 }
 

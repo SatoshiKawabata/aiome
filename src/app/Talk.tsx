@@ -35,7 +35,7 @@ export default function Talk() {
   console.log("bState", bState);
   console.log("talkState", talkState);
 
-  useChatCompletion();
+  const { continueAITalk } = useChatCompletion();
 
   useEffect(() => {
     const apiKey = getItem("apiKey");
@@ -80,24 +80,12 @@ export default function Talk() {
 
   return (
     <>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          talkDispatcher.dispatch({
-            type: "add-ai-chat-message",
-            payload: {
-              userId: aState.userId,
-              userName: aState.userName,
-              content: firstContent,
-            },
-          });
-        }}
-      >
+      <form>
         <div>
           <Label htmlFor="api-key" value="ChatGPT API key" />
           <TextInput
             id="api-key"
-            placeholder="Your ChatGPT API key"
+            placeholder="ChatGPT API keyを入力してください"
             required
             type="password"
             onInput={(e) => {
@@ -112,10 +100,10 @@ export default function Talk() {
           />
         </div>
         <div>
-          <Label htmlFor="talk-limit" value="Talk limit" />
+          <Label htmlFor="talk-limit" value="会話の生成回数" />
           <TextInput
             id="talk-limit"
-            placeholder="Please write down talk limit"
+            placeholder="会話の生成回数を入力してください"
             required
             type="number"
             onInput={(e) => {
@@ -130,10 +118,10 @@ export default function Talk() {
           />
         </div>
         <div>
-          <Label htmlFor="systemA" value="system of AI_1" />
+          <Label htmlFor="systemA" value="AI_1のsystem" />
           <Textarea
             id="systemA"
-            placeholder="Please write system of AI_1 description here"
+            placeholder="AI_1のsystemを入力してください"
             required
             rows={4}
             onInput={(e) => {
@@ -152,10 +140,10 @@ export default function Talk() {
           />
         </div>
         <div>
-          <Label htmlFor="systemB" value="system of AI_2" />
+          <Label htmlFor="systemB" value="AI_2のsystem" />
           <Textarea
             id="systemB"
-            placeholder="Please write system of AI_2 description here"
+            placeholder="AI_2のsystemを入力してください"
             required
             rows={4}
             onInput={(e) => {
@@ -173,23 +161,53 @@ export default function Talk() {
             }
           />
         </div>
+        {talkState.messages.length === 0 && (
+          <div>
+            <Label htmlFor="firstContent" value="AI_1の最初の発言" />
+            <Textarea
+              id="firstContent"
+              placeholder="AI_1の最初の発言を入力してください"
+              required
+              rows={4}
+              onInput={(e) => {
+                const value = (e.target as HTMLInputElement).value;
+                setItem("firstContent", value);
+                setFirstContent(value);
+              }}
+              value={firstContent}
+            />
+          </div>
+        )}
         <div>
-          <Label htmlFor="firstContent" value="First message of AI_1" />
-          <Textarea
-            id="firstContent"
-            placeholder="Please write first message of AI_1"
-            required
-            rows={4}
-            onInput={(e) => {
-              const value = (e.target as HTMLInputElement).value;
-              setItem("firstContent", value);
-              setFirstContent(value);
-            }}
-            value={firstContent}
-          />
-        </div>
-        <div>
-          <Button type="submit">Post</Button>
+          {talkState.messages.length === 0 ? (
+            <Button
+              type="button"
+              disabled={talkState.isAiTalking}
+              onClick={() => {
+                talkDispatcher.dispatch({
+                  type: "start-ai-talk",
+                  payload: {
+                    userId: aState.userId,
+                    userName: aState.userName,
+                    content: firstContent,
+                  },
+                });
+              }}
+            >
+              会話を開始する
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              disabled={talkState.isAiTalking}
+              onClick={() => {
+                // 会話を再開する
+                continueAITalk();
+              }}
+            >
+              会話を再開する
+            </Button>
+          )}
         </div>
       </form>
       <ul>

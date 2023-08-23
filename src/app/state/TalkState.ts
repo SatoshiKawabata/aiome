@@ -1,6 +1,10 @@
 export interface TalkState {
   messages: TalkMessage[];
   talkLimit: number;
+  // 今の会話を開始したときのメッセージの数
+  currentTalkStartCount: number;
+  // AIが会話中かどうか
+  isAiTalking: boolean;
 }
 
 export interface TalkMessage {
@@ -12,9 +16,19 @@ export interface TalkMessage {
 export const initialState: TalkState = {
   messages: [],
   talkLimit: 10,
+  currentTalkStartCount: 0,
+  isAiTalking: false,
 };
 
 type TalkAction =
+  | {
+      type: "start-ai-talk";
+      payload: {
+        userId: number;
+        userName: string;
+        content: string;
+      };
+    }
   | {
       type: "add-ai-chat-message";
       payload: {
@@ -28,6 +42,12 @@ type TalkAction =
       payload: {
         talkLimit: number;
       };
+    }
+  | {
+      type: "finish-ai-talking";
+    }
+  | {
+      type: "restart-ai-talking";
     };
 
 export type TalkDispatch = {
@@ -39,6 +59,18 @@ export const reducer: React.Reducer<TalkState, TalkAction> = (
   action
 ) => {
   switch (action.type) {
+    case "start-ai-talk":
+      const initialMessage: TalkMessage = {
+        userId: action.payload.userId,
+        userName: action.payload.userName,
+        content: convertAIChatMessageToTalkMessage(action.payload.content),
+      };
+      return {
+        ...state,
+        messages: [...state.messages, initialMessage],
+        isAiTalking: true,
+        currentTalkStartCount: state.messages.length,
+      };
     case "add-ai-chat-message":
       const newMessage: TalkMessage = {
         userId: action.payload.userId,
@@ -54,6 +86,17 @@ export const reducer: React.Reducer<TalkState, TalkAction> = (
         ...state,
         talkLimit: action.payload.talkLimit,
       };
+    case "finish-ai-talking":
+      return {
+        ...state,
+        isAiTalking: false,
+      };
+    case "restart-ai-talking":
+      return {
+        ...state,
+        isAiTalking: true,
+        currentTalkStartCount: state.messages.length,
+      };
     default:
       return state;
   }
@@ -61,7 +104,9 @@ export const reducer: React.Reducer<TalkState, TalkAction> = (
 
 const convertAIChatMessageToTalkMessage = (chatContent: string): string => {
   if (chatContent.includes("「") && chatContent.includes("」")) {
-    return chatContent.split("「")[1].split("」")[0];
+    const startBrackets = chatContent.split("「");
+    const last = startBrackets[startBrackets.length - 1];
+    return last.split("」")[0];
   }
   return chatContent;
 };
