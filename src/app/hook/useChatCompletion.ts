@@ -100,7 +100,9 @@ export function useChatCompletion() {
         (msg) => msg.userId === aState.userId || msg.userId === bState.userId
       );
       const latestHumanMessages = reversed.slice(0, index).reverse();
-      const latestHumanMessage = latestHumanMessages.join("\n");
+      const latestHumanMessage = latestHumanMessages
+        .map((msg) => msg.content)
+        .join("\n");
       const latestAiMessage = reversed[index];
       if (latestAiMessage.userId === aState.userId) {
         // 最後の発言がAの場合はAが発言する
@@ -110,7 +112,7 @@ export function useChatCompletion() {
         const bSystem = bState.messages.find(
           (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
         );
-        const prompt = `あなたの立場は「${aSystem}」です。${bState.userName}の立場は「${bSystem}」です。
+        const prompt = `あなたの立場は「${aSystem?.content}」です。${bState.userName}の立場は「${bSystem?.content}」です。
         それをふまえて、人間の発言「${latestHumanMessage}」があなたの立場と${bState.userName}の立場のどちらに近いですか？
         あなたに近い場合は、人間の発言をふまえた上で${bState.userName}に対して反論を行ってください。
         ${bState.userName}に近い場合は、人間に対して反論を行ってください。
@@ -134,15 +136,18 @@ export function useChatCompletion() {
         const bSystem = bState.messages.find(
           (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
         );
-        const prompt = `あなたの立場は「${bSystem}」です。${aState.userName}の立場は「${aSystem}」です。
-        それをふまえて、人間の発言「${latestHumanMessage}」があなたの立場と${aState.userName}の立場のどちらに近いですか？
-        あなたに近い場合は、人間の発言をふまえた上で${aState.userName}に対して反論を行ってください。
-        ${aState.userName}に近い場合は、人間に対して反論を行ってください。
-        次のJSONフォーマットで返信してください。
-        {
-          target: ${aState.userName} or "人間",
-          content: "〇〇"
-        }
+        const prompt = `- あなたの立場は「${bSystem?.content}」です。
+- ${aState.userName}の立場は「${aSystem?.content}」です。
+以上をふまえて、人間の発言「${latestHumanMessage}」があなたの立場と${aState.userName}の立場のどちらに近いですか？あなたに近い場合は、人間の発言をふまえた上で${aState.userName}に対して反論を行ってください。
+${aState.userName}に近い場合は、人間に対して反論を行ってください。
+
+次のJSONフォーマットで返信してください。
+\`\`\`
+{
+  target: "${aState.userName}" or "人間",
+  content: "あなたの返信内容"
+}
+\`\`\`
         `;
         // promptをChatGPTに投げる
         const msg: ChatCompletionRequestMessage = {

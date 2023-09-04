@@ -102,11 +102,14 @@ ${talkMessage.userName}さんが
 - 口語口調で書いてください。
 - 相手の論理の虚を突いてください。
 - 相手の揚げ足を取ってください。
-- 以下のJSONフォーマットで返答ください。
+
+以下のJSONフォーマットで返答ください。
+\`\`\`
 {
   target: "${talkMessage.userName}",
   content: "{あなたの反論}"
 }
+\`\`\`
 
     `,
     name: talkMessage.userName,
