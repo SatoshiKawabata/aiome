@@ -279,7 +279,7 @@ async function postChat(
   });
 
   try {
-    const content = await createChatCompletion(apiKey, {
+    const res = await createChatCompletion(apiKey, {
       model: state.model,
       temperature: state.temperature,
       top_p: state.top_p,
@@ -300,6 +300,9 @@ async function postChat(
         convertTalkMessageToHumanChatMessage(newTalkMessage),
       ],
     });
+
+    const obj = JSON.parse(res);
+    const { target, content } = obj;
 
     chatDispatcher.dispatch({
       type: "add-ai-chat-message",
