@@ -36,6 +36,7 @@ export default function Talk() {
   console.log("talkState", talkState);
 
   const { continueAITalk } = useChatCompletion();
+  const [humanMessage, setHumanMessage] = useState("");
 
   useEffect(() => {
     const apiKey = getItem("apiKey");
@@ -219,6 +220,33 @@ export default function Talk() {
           );
         })}
       </ul>
+      {!talkState.isAiTalking && talkState.messages.length > 0 && (
+        <div className="flex">
+          <Button
+            type="button"
+            onClick={() => {
+              // 人間の発言を追加する
+              talkDispatcher.dispatch({
+                type: "add-human-chat-message",
+                payload: {
+                  content: humanMessage,
+                },
+              });
+            }}
+          >
+            人間として発言する
+          </Button>
+          <TextInput
+            className="flex-grow"
+            value={humanMessage}
+            onInput={(e) => {
+              const value = (e.target as HTMLInputElement).value;
+              setHumanMessage(value);
+            }}
+            placeholder="人間としての発言内容を入力してください"
+          />
+        </div>
+      )}
     </>
   );
 }

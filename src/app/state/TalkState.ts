@@ -1,3 +1,5 @@
+export const HUMAN_USER_ID = 99999;
+
 export interface TalkState {
   messages: TalkMessage[];
   talkLimit: number;
@@ -48,6 +50,12 @@ type TalkAction =
     }
   | {
       type: "restart-ai-talking";
+    }
+  | {
+      type: "add-human-chat-message";
+      payload: {
+        content: string;
+      };
     };
 
 export type TalkDispatch = {
@@ -96,6 +104,18 @@ export const reducer: React.Reducer<TalkState, TalkAction> = (
         ...state,
         isAiTalking: true,
         currentTalkStartCount: state.messages.length,
+      };
+    case "add-human-chat-message":
+      const humanMessage: TalkMessage = {
+        userId: HUMAN_USER_ID,
+        userName: "あなた",
+        content: convertAIChatMessageToTalkMessage(action.payload.content),
+      };
+      return {
+        ...state,
+        isAiTalking: true,
+        currentTalkStartCount: state.messages.length,
+        messages: [...state.messages, humanMessage],
       };
     default:
       return state;
