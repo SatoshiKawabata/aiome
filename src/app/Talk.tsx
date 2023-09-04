@@ -232,6 +232,8 @@ export default function Talk() {
                   content: humanMessage,
                 },
               });
+              // テキスト入力欄をクリアする
+              setHumanMessage("");
             }}
           >
             人間として発言する
