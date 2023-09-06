@@ -112,15 +112,18 @@ export function useChatCompletion() {
         const bSystem = bState.messages.find(
           (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
         );
-        const prompt = `あなたの立場は「${aSystem?.content}」です。${bState.userName}の立場は「${bSystem?.content}」です。
-        それをふまえて、人間の発言「${latestHumanMessage}」があなたの立場と${bState.userName}の立場のどちらに近いですか？
-        あなたに近い場合は、人間の発言をふまえた上で${bState.userName}に対して反論を行ってください。
-        ${bState.userName}に近い場合は、人間に対して反論を行ってください。
-        次のフォーマットで返信してください。
-        {
-          反論する相手: ${bState.userName} or "人間",
-          反論する内容: "〇〇"
-        }
+        const prompt = `- あなたの立場は「${aSystem?.content}」です。
+- ${bState.userName}の立場は「${bSystem?.content}」です。
+それをふまえて、人間の発言「${latestHumanMessage}」があなたの立場と${bState.userName}の立場のどちらに近いですか？あなたに近い場合は、人間の発言をふまえた上で${bState.userName}に対して反論を行ってください。
+${bState.userName}に近い場合は、人間に対して反論を行ってください。
+
+以下のJSONフォーマットでtargetとcontentという変数名を変えずに返答してください。
+\`\`\`
+{
+  "target": "${bState.userName}" or "人間",
+  "content": "あなたの返信内容"
+}
+\`\`\`
         `;
         // promptをChatGPTに投げる
         const msg: ChatCompletionRequestMessage = {
@@ -141,11 +144,11 @@ export function useChatCompletion() {
 以上をふまえて、人間の発言「${latestHumanMessage}」があなたの立場と${aState.userName}の立場のどちらに近いですか？あなたに近い場合は、人間の発言をふまえた上で${aState.userName}に対して反論を行ってください。
 ${aState.userName}に近い場合は、人間に対して反論を行ってください。
 
-次のJSONフォーマットで返信してください。
+以下のJSONフォーマットでtargetとcontentという変数名を変えずに返答してください。
 \`\`\`
 {
-  target: "${aState.userName}" or "人間",
-  content: "あなたの返信内容"
+  "target": "${aState.userName}" or "人間",
+  "content": "あなたの返信内容"
 }
 \`\`\`
         `;
@@ -206,7 +209,7 @@ async function postChatFromHuman(
   humanMsg: ChatCompletionRequestMessage
 ) {
   try {
-    const content = await createChatCompletion(apiKey, {
+    const res = await createChatCompletion(apiKey, {
       model: state.model,
       temperature: state.temperature,
       top_p: state.top_p,
@@ -228,6 +231,9 @@ async function postChatFromHuman(
       ],
     });
 
+    const obj = JSON.parse(res);
+    const content = `${obj.target}さん、${obj.content}`;
+
     chatDispatcher.dispatch({
       type: "add-ai-chat-message",
       payload: content,
@@ -242,7 +248,6 @@ async function postChatFromHuman(
       payload: replyMessage,
     });
 
-    const obj = JSON.parse(content);
     if (obj.target === "人間") {
       // 人間に向けて返答してきた場合
       // テキスト入力inputを出す

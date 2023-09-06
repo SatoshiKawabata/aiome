@@ -71,7 +71,7 @@ export const reducer: React.Reducer<TalkState, TalkAction> = (
       const initialMessage: TalkMessage = {
         userId: action.payload.userId,
         userName: action.payload.userName,
-        content: convertAIChatMessageToTalkMessage(action.payload.content),
+        content: action.payload.content,
       };
       return {
         ...state,
@@ -83,7 +83,7 @@ export const reducer: React.Reducer<TalkState, TalkAction> = (
       const newMessage: TalkMessage = {
         userId: action.payload.userId,
         userName: action.payload.userName,
-        content: convertAIChatMessageToTalkMessage(action.payload.content),
+        content: action.payload.content,
       };
       return {
         ...state,

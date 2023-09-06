@@ -119,10 +119,10 @@ export default function Talk() {
           />
         </div>
         <div>
-          <Label htmlFor="systemA" value="AI_1のsystem" />
+          <Label htmlFor="systemA" value={`${aState.userName}のsystem`} />
           <Textarea
             id="systemA"
-            placeholder="AI_1のsystemを入力してください"
+            placeholder={`${aState.userName}のsystemを入力してください`}
             required
             rows={4}
             onInput={(e) => {
@@ -141,10 +141,10 @@ export default function Talk() {
           />
         </div>
         <div>
-          <Label htmlFor="systemB" value="AI_2のsystem" />
+          <Label htmlFor="systemB" value={`${bState.userName}のsystem`} />
           <Textarea
             id="systemB"
-            placeholder="AI_2のsystemを入力してください"
+            placeholder={`${bState.userName}のsystemを入力してください`}
             required
             rows={4}
             onInput={(e) => {
@@ -164,10 +164,13 @@ export default function Talk() {
         </div>
         {talkState.messages.length === 0 && (
           <div>
-            <Label htmlFor="firstContent" value="AI_1の最初の発言" />
+            <Label
+              htmlFor="firstContent"
+              value={`${aState.userName}の最初の発言`}
+            />
             <Textarea
               id="firstContent"
-              placeholder="AI_1の最初の発言を入力してください"
+              placeholder={`${bState.userName}の最初の発言を入力してください`}
               required
               rows={4}
               onInput={(e) => {

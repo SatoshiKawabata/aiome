@@ -19,7 +19,7 @@ export const ChatCompletionBProvider: FC<{ children: ReactNode }> = ({
   const [state, dispatch] = useReducer(reducer, {
     ...initialState,
     userId: 2,
-    userName: "AI_2",
+    userName: "Mayu",
   });
 
   return (
