@@ -240,7 +240,7 @@ async function postChatFromHuman(
         content: res,
       };
     }
-    const content = `${obj.target}さん、${obj.content}`;
+    const content = `${obj.content}`;
 
     chatDispatcher.dispatch({
       type: "add-ai-chat-message",
