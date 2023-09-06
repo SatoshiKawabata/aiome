@@ -231,7 +231,15 @@ async function postChatFromHuman(
       ],
     });
 
-    const obj = JSON.parse(res);
+    let obj;
+    try {
+      obj = JSON.parse(res);
+    } catch (e) {
+      obj = {
+        target: res.includes("ゲスト") ? "ゲスト" : "",
+        content: res,
+      };
+    }
     const content = `${obj.target}さん、${obj.content}`;
 
     chatDispatcher.dispatch({
