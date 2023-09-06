@@ -93,8 +93,8 @@ export function useChatCompletion() {
       // 最後の発言がBの場合はAが発言する
       postChatA(latestMessage);
     } else {
-      // 人間の発言の場合
-      // 最新の人間の発言をつなげる
+      // ゲストの発言の場合
+      // 最新のゲストの発言をつなげる
       const reversed = [...talkState.messages].reverse();
       const index = reversed.findIndex(
         (msg) => msg.userId === aState.userId || msg.userId === bState.userId
@@ -114,13 +114,13 @@ export function useChatCompletion() {
         );
         const prompt = `- あなたの立場は「${aSystem?.content}」です。
 - ${bState.userName}の立場は「${bSystem?.content}」です。
-それをふまえて、人間の発言「${latestHumanMessage}」があなたの立場と${bState.userName}の立場のどちらに近いですか？あなたに近い場合は、人間の発言をふまえた上で${bState.userName}に対して反論を行ってください。
-${bState.userName}に近い場合は、人間に対して反論を行ってください。
+それをふまえて、ゲストの発言「${latestHumanMessage}」があなたの立場と${bState.userName}の立場のどちらに近いですか？あなたに近い場合は、ゲストの発言をふまえた上で${bState.userName}に対して反論を行ってください。
+${bState.userName}に近い場合は、ゲストに対して反論を行ってください。
 
 以下のJSONフォーマットでtargetとcontentという変数名を変えずに返答してください。
 \`\`\`
 {
-  "target": "${bState.userName}" or "人間",
+  "target": "${bState.userName}" or "ゲスト",
   "content": "あなたの返信内容"
 }
 \`\`\`
@@ -141,13 +141,13 @@ ${bState.userName}に近い場合は、人間に対して反論を行ってく�
         );
         const prompt = `- あなたの立場は「${bSystem?.content}」です。
 - ${aState.userName}の立場は「${aSystem?.content}」です。
-以上をふまえて、人間の発言「${latestHumanMessage}」があなたの立場と${aState.userName}の立場のどちらに近いですか？あなたに近い場合は、人間の発言をふまえた上で${aState.userName}に対して反論を行ってください。
-${aState.userName}に近い場合は、人間に対して反論を行ってください。
+以上をふまえて、ゲストの発言「${latestHumanMessage}」があなたの立場と${aState.userName}の立場のどちらに近いですか？あなたに近い場合は、ゲストの発言をふまえた上で${aState.userName}に対して反論を行ってください。
+${aState.userName}に近い場合は、ゲストに対して反論を行ってください。
 
 以下のJSONフォーマットでtargetとcontentという変数名を変えずに返答してください。
 \`\`\`
 {
-  "target": "${aState.userName}" or "人間",
+  "target": "${aState.userName}" or "ゲスト",
   "content": "あなたの返信内容"
 }
 \`\`\`
@@ -160,7 +160,7 @@ ${aState.userName}に近い場合は、人間に対して反論を行ってく�
         postChatFromHuman(talkDispatcher, bDispatcher, bState, apiKey, msg);
       }
 
-      // 人間が「〇〇」と言っている
+      // ゲストが「〇〇」と言っている
       // AI1の立場とAI2の立場、どちらに近いですかを答えつつ、返答をください。
     }
   }, [talkState.messages.length]);
@@ -226,7 +226,7 @@ async function postChatFromHuman(
         ...state.messages.filter(
           (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
         ),
-        // 人間の発言からChatGPTに投げるプロンプト
+        // ゲストの発言からChatGPTに投げるプロンプト
         humanMsg,
       ],
     });
@@ -248,8 +248,8 @@ async function postChatFromHuman(
       payload: replyMessage,
     });
 
-    if (obj.target === "人間") {
-      // 人間に向けて返答してきた場合
+    if (obj.target === "ゲスト") {
+      // ゲストに向けて返答してきた場合
       // テキスト入力inputを出す
     } else {
       // もう一方のAIに向けて返答してきた場合

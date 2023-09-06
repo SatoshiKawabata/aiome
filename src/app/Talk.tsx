@@ -228,7 +228,7 @@ export default function Talk() {
           <Button
             type="button"
             onClick={() => {
-              // 人間の発言を追加する
+              // ゲストの発言を追加する
               talkDispatcher.dispatch({
                 type: "add-human-chat-message",
                 payload: {
@@ -239,7 +239,7 @@ export default function Talk() {
               setHumanMessage("");
             }}
           >
-            人間として発言する
+            ゲストとして発言する
           </Button>
           <TextInput
             className="flex-grow"
@@ -248,7 +248,7 @@ export default function Talk() {
               const value = (e.target as HTMLInputElement).value;
               setHumanMessage(value);
             }}
-            placeholder="人間としての発言内容を入力してください"
+            placeholder="ゲストとしての発言内容を入力してください"
           />
         </div>
       )}
