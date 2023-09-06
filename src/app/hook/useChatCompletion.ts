@@ -114,10 +114,11 @@ export function useChatCompletion() {
         );
         const prompt = `- あなたの立場は「${aSystem?.content}」です。
 - ${bState.userName}の立場は「${bSystem?.content}」です。
-それをふまえて、ゲストの発言「${latestHumanMessage}」があなたの立場と${bState.userName}の立場のどちらに近いですか？あなたに近い場合は、ゲストの発言をふまえた上で${bState.userName}に対して反論を行ってください。
+それをふまえて、ゲストの発言「${latestHumanMessage}」があなたの立場と${bState.userName}の立場のどちらに近いですか？
+あなたに近い場合は、ゲストの発言をふまえた上で${bState.userName}に対して反論を行ってください。
 ${bState.userName}に近い場合は、ゲストに対して反論を行ってください。
 
-以下のJSONフォーマットでtargetとcontentという変数名を変えずに返答してください。
+以下のJSONフォーマットでtargetとcontentという変数名を変えずに返答してください。反論する相手の名前をtargetに入れてください。
 \`\`\`
 {
   "target": "${bState.userName}" or "ゲスト",
@@ -141,10 +142,11 @@ ${bState.userName}に近い場合は、ゲストに対して反論を行って�
         );
         const prompt = `- あなたの立場は「${bSystem?.content}」です。
 - ${aState.userName}の立場は「${aSystem?.content}」です。
-以上をふまえて、ゲストの発言「${latestHumanMessage}」があなたの立場と${aState.userName}の立場のどちらに近いですか？あなたに近い場合は、ゲストの発言をふまえた上で${aState.userName}に対して反論を行ってください。
+以上をふまえて、ゲストの発言「${latestHumanMessage}」があなたの立場と${aState.userName}の立場のどちらに近いですか？
+あなたに近い場合は、ゲストの発言をふまえた上で${aState.userName}に対して反論を行ってください。
 ${aState.userName}に近い場合は、ゲストに対して反論を行ってください。
 
-以下のJSONフォーマットでtargetとcontentという変数名を変えずに返答してください。
+以下のJSONフォーマットでtargetとcontentという変数名を変えずに返答してください。反論する相手の名前をtargetに入れてください。
 \`\`\`
 {
   "target": "${aState.userName}" or "ゲスト",
@@ -319,7 +321,15 @@ async function postChat(
       ],
     });
 
-    const obj = JSON.parse(res);
+    let obj;
+    try {
+      obj = JSON.parse(res);
+    } catch (e) {
+      obj = {
+        target: res.includes("ゲスト") ? "ゲスト" : "",
+        content: res,
+      };
+    }
     const { target, content } = obj;
 
     chatDispatcher.dispatch({
