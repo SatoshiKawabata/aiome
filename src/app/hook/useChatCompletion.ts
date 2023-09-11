@@ -112,8 +112,8 @@ export function useChatCompletion() {
         const bSystem = bState.messages.find(
           (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
         );
-        const prompt = `- あなたの立場は「${aSystem?.content}」です。
-- ${bState.userName}の立場は「${bSystem?.content}」です。
+        const prompt = `・あなたの立場は「${aSystem?.content}」です。
+・${bState.userName}の立場は「${bSystem?.content}」です。
 それをふまえて、ゲストの発言「${latestHumanMessage}」があなたの立場と${bState.userName}の立場のどちらに近いですか？
 あなたに近い場合は、ゲストの発言をふまえた上で${bState.userName}に対して反論を行ってください。
 ${bState.userName}に近い場合は、ゲストに対して反論を行ってください。
@@ -140,8 +140,8 @@ ${bState.userName}に近い場合は、ゲストに対して反論を行って�
         const bSystem = bState.messages.find(
           (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
         );
-        const prompt = `- あなたの立場は「${bSystem?.content}」です。
-- ${aState.userName}の立場は「${aSystem?.content}」です。
+        const prompt = `・あなたの立場は「${bSystem?.content}」です。
+・${aState.userName}の立場は「${aSystem?.content}」です。
 以上をふまえて、ゲストの発言「${latestHumanMessage}」があなたの立場と${aState.userName}の立場のどちらに近いですか？
 あなたに近い場合は、ゲストの発言をふまえた上で${aState.userName}に対して反論を行ってください。
 ${aState.userName}に近い場合は、ゲストに対して反論を行ってください。
