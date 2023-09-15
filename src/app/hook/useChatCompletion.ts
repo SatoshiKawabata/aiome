@@ -79,6 +79,87 @@ export function useChatCompletion() {
       talkState.messages.length - talkState.currentTalkStartCount >=
         talkState.talkLimit
     ) {
+      // 会話を終了する前に話題の転換を行う
+      const changeTopic = async (
+        currentState: ChatCompletionState,
+        partnerState: ChatCompletionState
+      ) => {
+        // 最後の発言がAの場合はAが発言する
+        const currentSystem = currentState.messages.find(
+          (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
+        );
+        const partnerSystem = partnerState.messages.find(
+          (msg) => msg.role === ChatCompletionRequestMessageRoleEnum.System
+        );
+        const prompt = `
+${talkState.messages
+  .map((msg) => {
+    return `${msg.userName}「${msg.content}」`;
+  })
+  .join(`\n`)}
+--------
+以上の会話をふまえて、以下について答えてください。
+・${currentState.userName}の立場は「${currentSystem?.content}」です。
+・${partnerState.userName}の立場は「${partnerSystem?.content}」です。
+
+次のステップで考えてください。
+1. ${currentState.userName}と${
+          partnerState.userName
+        }が行ってきた会話で中心となるトピックの転換点を考えてください。
+2. その新しいトピックに対して${currentState.userName}と${
+          partnerState.userName
+        }はそれぞれ賛成と反対に分かれて議論を続けさせたいです。会話の中心となるトピックに対してそれぞれの立場を200文字程度で新しく表現してください。
+
+以下のJSONフォーマットで変数名を変えずに返答してください。
+\`\`\`
+{
+  "${currentState.userName}": "${
+          currentState.userName
+        }の立場の内容をここに書いてください",
+  "${partnerState.userName}": "${
+          partnerState.userName
+        }の立場の内容をここに書いてください"
+}
+  \`\`\`
+          `;
+        const res = await createChatCompletion(apiKey, {
+          // TODO: ここはどちらでもないAI用の値を入れていく
+          model: currentState.model,
+          temperature: currentState.temperature,
+          top_p: currentState.top_p,
+          n: currentState.n,
+          stream: currentState.stream,
+          stop: currentState.stop,
+          max_tokens: currentState.max_tokens,
+          presence_penalty: currentState.presence_penalty,
+          frequency_penalty: currentState.frequency_penalty,
+          logit_bias: currentState.logit_bias,
+          messages: [
+            {
+              content: prompt,
+              role: ChatCompletionRequestMessageRoleEnum.User,
+            },
+          ],
+        });
+        return JSON.parse(res);
+      };
+      (async () => {
+        const res = await changeTopic(aState, bState);
+        console.log("res", res);
+        // ここでSystemを書き換える;
+        aDispatcher.dispatch({
+          type: "set-system-chat-message",
+          payload: `あなたの立場は「${
+            res[aState.userName]
+          }」です。男っぽい口調で話してください。`,
+        });
+        bDispatcher.dispatch({
+          type: "set-system-chat-message",
+          payload: `あなたの立場は「${
+            res[bState.userName]
+          }」です。女っぽい口調で話してください。`,
+        });
+      })();
       // 会話を終了する
       talkDispatcher.dispatch({
         type: "finish-ai-talking",
